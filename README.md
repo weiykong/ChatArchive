@@ -9,7 +9,7 @@ ChatArchive is a Chromium extension for exporting conversations from modern AI c
 
 The project currently focuses on reliable export, readable Markdown, and maintainable extraction logic rather than one-off scraping hacks.
 
-![ChatArchive logo](assets/logo.png)
+<img src="assets/logo.png" alt="ChatArchive logo" width="220">
 
 ## Preview
 

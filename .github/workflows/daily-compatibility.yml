@@ -5,6 +5,9 @@ on:
     - cron: "0 8 * * *"
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   fixture-compatibility:
     runs-on: ubuntu-latest

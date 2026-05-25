@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ChatArchive",
   "version": "1.0.0",
-  "description": "Export chats from ChatGPT, Gemini, DeepSeek, Grok, Perplexity, Claude, Mistral, HuggingChat, Meta AI, Poe, Copilot, Phind, You.com.",
+  "description": "Export AI chat conversations to Markdown, PDF, JSON, and more — locally, with no data sent to any server.",
   "permissions": ["activeTab", "scripting", "tabs", "storage", "clipboardWrite"],
   "background": {
     "service_worker": "src/background/service-worker.js"

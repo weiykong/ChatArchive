@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatArchive — Export AI Conversations Locally</title>
+  <meta name="description" content="Save your AI chat conversations as local files. Works across major AI assistants — no account, no server, nothing leaves your browser.">
+  <meta property="og:title" content="ChatArchive — Export AI Conversations Locally">
+  <meta property="og:description" content="Save your AI chat conversations as local files. No account, no server, nothing leaves your browser.">
+  <meta property="og:image" content="assets/logo.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #0f1e3d;
+      --teal:    #0a5c58;
+      --orange:  #ff7b4a;
+      --orange2: #ff9a70;
+      --mint:    #cffee3;
+      --cream:   #fff8ee;
+      --blue:    #88c8ff;
+      --purple:  #d88bff;
+      --yellow:  #ffdb88;
+      --white:   #ffffff;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    /* ── Gradient background ── */
+    .bg-gradient {
+      background: linear-gradient(135deg, #0f1e3d 0%, #0a5c58 100%);
+      position: relative;
+    }
+    .bg-gradient::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 85% 10%, rgba(255,123,74,.18) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 10% 90%, rgba(207,254,227,.10) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* dot grid */
+    .bg-gradient::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 5%;
+      height: 64px;
+      background: rgba(15,30,61,.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--white);
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .nav-logo img { width: 30px; height: 30px; border-radius: 7px; }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .18s;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-ghost {
+      background: rgba(255,255,255,.07);
+      color: rgba(255,255,255,.8);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+    .btn-orange {
+      background: var(--orange);
+      color: #fff;
+      box-shadow: 0 4px 18px rgba(255,123,74,.35);
+    }
+    .btn-orange:hover { background: var(--orange2); box-shadow: 0 6px 24px rgba(255,123,74,.45); transform: translateY(-1px); }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,.25);
+    }
+    .btn-outline:hover { background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.5); }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 100px 5% 80px;
+      gap: 28px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(255,123,74,.12);
+      border: 1px solid rgba(255,123,74,.3);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--orange2);
+      letter-spacing: .3px;
+    }
+    .hero-badge span { opacity: .6; }
+
+    h1 {
+      font-size: clamp(36px, 6vw, 68px);
+      font-weight: 800;
+      line-height: 1.08;
+      letter-spacing: -1.5px;
+      max-width: 820px;
+    }
+    h1 em {
+      font-style: normal;
+      background: linear-gradient(90deg, var(--orange), var(--orange2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: clamp(16px, 2vw, 19px);
+      color: rgba(255,255,255,.55);
+      max-width: 540px;
+      line-height: 1.6;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    /* ── Mock popup ── */
+    .popup-wrap {
+      position: relative;
+      margin-top: 20px;
+      filter: drop-shadow(0 32px 64px rgba(0,0,0,.5));
+    }
+
+    .browser-chrome {
+      background: #f1f3f4;
+      border-radius: 14px 14px 0 0;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .traffic-lights { display: flex; gap: 6px; }
+    .tl { width: 11px; height: 11px; border-radius: 50%; }
+    .tl-r { background: #ff5f57; }
+    .tl-y { background: #ffbd2e; }
+    .tl-g { background: #28ca41; }
+    .url-bar {
+      flex: 1;
+      background: #e8eaed;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: #5f6368;
+      text-align: center;
+      font-family: monospace;
+    }
+
+    .popup-body {
+      background: #fff;
+      border-radius: 0 0 14px 14px;
+      padding: 16px;
+      width: 290px;
+    }
+
+    .popup-header {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 12px;
+    }
+    .popup-icon {
+      width: 28px; height: 22px;
+      background: #fff8ee;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 3px;
+      padding: 4px 5px;
+    }
+    .popup-icon span {
+      display: block;
+      height: 3px;
+      border-radius: 2px;
+      background: #ff7b4a;
+    }
+    .popup-icon span:nth-child(2) { width: 75%; }
+    .popup-icon span:nth-child(3) { width: 55%; }
+
+    .popup-title { font-size: 14px; font-weight: 700; color: #3c4043; }
+
+    .detected-chip {
+      background: #e8f0fe;
+      border: 1px solid #c5d6fc;
+      border-radius: 8px;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .detected-chip .left { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: #1a73e8; }
+    .detected-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: #1a73e8; }
+    .detected-chip .right { font-size: 10px; color: #1a73e8; opacity: .7; }
+
+    .popup-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #5f6368; margin-bottom: 6px; }
+
+    .popup-select {
+      width: 100%;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      padding: 10px;
+      font-size: 13px;
+      color: #3c4043;
+      margin-bottom: 12px;
+      background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235f6368'/%3E%3C/svg%3E") no-repeat right 10px center;
+      appearance: none;
+    }
+
+    .popup-btn-primary {
+      width: 100%;
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .popup-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+    .popup-btn-sec {
+      border: 1px solid #dadce0;
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #1a73e8;
+      background: #fff;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .popup-progress-bar { height: 4px; background: #e8eaed; border-radius: 2px; overflow: hidden; margin-bottom: 6px; }
+    .popup-progress-fill { height: 100%; width: 65%; background: #1a73e8; border-radius: 2px; animation: progress-anim 2s ease-in-out infinite alternate; }
+    @keyframes progress-anim { from { width: 40%; } to { width: 85%; } }
+
+    .popup-status { font-size: 11px; color: #9aa0a6; text-align: center; margin-bottom: 12px; }
+
+    .popup-diag {
+      background: #f8f9fa;
+      border: 1px solid #dadce0;
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+    .popup-diag-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #5f6368; margin-bottom: 8px; }
+    .diag-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; }
+    .diag-row .k { color: #5f6368; }
+    .diag-row .v { font-weight: 600; color: #3c4043; }
+    .diag-row .v.high { background: #e6f4ea; color: #188038; padding: 1px 7px; border-radius: 10px; font-size: 10px; }
+
+    /* ── Section layout ── */
+    section { padding: 88px 5%; }
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--orange2);
+      margin-bottom: 14px;
+    }
+    h2 {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+    .section-sub {
+      font-size: 17px;
+      color: rgba(255,255,255,.5);
+      max-width: 540px;
+      line-height: 1.6;
+      margin-bottom: 52px;
+    }
+
+    /* ── Features ── */
+    #features { background: rgba(0,0,0,.15); }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .feature-card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s, border-color .2s;
+    }
+    .feature-card:hover { transform: translateY(-3px); border-color: rgba(255,255,255,.16); }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      border-radius: 4px 0 0 4px;
+    }
+    .feature-card.c-orange::before { background: var(--orange); }
+    .feature-card.c-mint::before   { background: var(--mint); }
+    .feature-card.c-blue::before   { background: var(--blue); }
+    .feature-card.c-yellow::before { background: var(--yellow); }
+    .feature-card.c-purple::before { background: var(--purple); }
+
+    .feature-icon {
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+    .feature-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 7px; }
+    .feature-card p  { font-size: 13px; color: rgba(255,255,255,.5); line-height: 1.6; }
+
+    /* ── How it works ── */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0;
+      position: relative;
+    }
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: 10%;
+      right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 0 24px;
+    }
+    .step-num {
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: rgba(255,123,74,.12);
+      border: 1px solid rgba(255,123,74,.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--orange);
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+    .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .step p  { font-size: 13px; color: rgba(255,255,255,.5); line-height: 1.6; }
+
+    /* ── Formats ── */
+    #formats { background: rgba(0,0,0,.1); }
+
+    .formats-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .format-pill {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 18px 24px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+      transition: all .2s;
+      min-width: 120px;
+    }
+    .format-pill:hover { background: rgba(255,255,255,.08); transform: translateY(-2px); }
+    .format-pill .fmt-name { font-size: 15px; font-weight: 700; }
+    .format-pill .fmt-desc { font-size: 11px; color: rgba(255,255,255,.4); }
+
+    /* ── Platforms ── */
+    .platforms-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .platform-tag {
+      padding: 8px 16px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,.75);
+      transition: all .2s;
+    }
+    .platform-tag:hover { background: rgba(255,255,255,.1); color: #fff; border-color: rgba(255,255,255,.25); }
+
+    /* ── Privacy ── */
+    #privacy {
+      background: rgba(0,0,0,.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    .privacy-points {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      width: 100%;
+      max-width: 900px;
+    }
+    .privacy-card {
+      background: rgba(207,254,227,.05);
+      border: 1px solid rgba(207,254,227,.12);
+      border-radius: 14px;
+      padding: 24px;
+      text-align: left;
+    }
+    .privacy-card .privacy-icon { font-size: 24px; margin-bottom: 12px; }
+    .privacy-card h3 { font-size: 14px; font-weight: 700; color: var(--mint); margin-bottom: 6px; }
+    .privacy-card p  { font-size: 13px; color: rgba(255,255,255,.5); line-height: 1.5; }
+
+    /* ── CTA ── */
+    .cta-section {
+      text-align: center;
+      padding: 100px 5%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 28px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid rgba(255,255,255,.07);
+      padding: 32px 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 13px;
+      color: rgba(255,255,255,.35);
+    }
+    footer a { color: rgba(255,255,255,.5); text-decoration: none; }
+    footer a:hover { color: #fff; }
+    .footer-links { display: flex; gap: 20px; }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .hero { padding: 72px 5% 56px; }
+      .popup-wrap { transform: scale(.9); }
+      nav .btn-ghost:not(.nav-gh) { display: none; }
+      .steps::before { display: none; }
+      footer { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body class="bg-gradient">
+
+  <!-- ── Nav ── -->
+  <nav>
+    <a class="nav-logo" href="#">
+      <img src="assets/icon-48.png" alt="ChatArchive icon">
+      ChatArchive
+    </a>
+    <div class="nav-links">
+      <a class="btn btn-ghost" href="#features">Features</a>
+      <a class="btn btn-ghost" href="#formats">Formats</a>
+      <a class="btn btn-ghost nav-gh" href="https://github.com/weiyuankong/ChatArchive" target="_blank">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+      <a class="btn btn-orange" href="https://chrome.google.com/webstore" target="_blank">
+        Add to Chrome
+      </a>
+    </div>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="hero bg-gradient">
+    <div class="hero-badge">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M6 3v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      v1.0.0 · Open Source · MV3
+      <span>·</span>
+      13 Platforms
+    </div>
+
+    <h1>Archive every AI chat<br><em>locally.</em></h1>
+
+    <p class="hero-sub">
+      Export full conversation histories from your favourite AI assistants
+      into clean files — no account, no backend, nothing leaves your browser.
+    </p>
+
+    <div class="hero-actions">
+      <a class="btn btn-orange" href="https://chrome.google.com/webstore" target="_blank">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm0 4.5c2.02 0 3.84.67 5.3 1.77L5.77 17.3A7.47 7.47 0 0 1 4.5 12c0-4.14 3.36-7.5 7.5-7.5zm0 15c-2.02 0-3.84-.67-5.3-1.77l11.53-11.03A7.47 7.47 0 0 1 19.5 12c0 4.14-3.36 7.5-7.5 7.5z"/></svg>
+        Add to Chrome — it's free
+      </a>
+      <a class="btn btn-outline" href="https://github.com/weiyuankong/ChatArchive" target="_blank">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+
+    <!-- Mock popup -->
+    <div class="popup-wrap">
+      <div class="browser-chrome">
+        <div class="traffic-lights">
+          <div class="tl tl-r"></div>
+          <div class="tl tl-y"></div>
+          <div class="tl tl-g"></div>
+        </div>
+        <div class="url-bar">chatgpt.com</div>
+      </div>
+      <div class="popup-body">
+        <div class="popup-header">
+          <div class="popup-icon">
+            <span style="width:100%"></span>
+            <span></span>
+            <span></span>
+          </div>
+          <span class="popup-title">ChatArchive</span>
+        </div>
+
+        <div class="detected-chip">
+          <div class="left"><div class="dot"></div>Detected: ChatGPT</div>
+          <div class="right">✓ Supported</div>
+        </div>
+
+        <div class="popup-label">Export Format</div>
+        <select class="popup-select">
+          <option>Markdown</option>
+          <option>PDF</option>
+          <option>JSON</option>
+        </select>
+
+        <button class="popup-btn-primary">⬇ Export Chat</button>
+        <div class="popup-btn-row">
+          <div class="popup-btn-sec">⎘ Copy</div>
+          <div class="popup-btn-sec">⎙ Save PDF</div>
+        </div>
+
+        <div class="popup-progress-bar"><div class="popup-progress-fill"></div></div>
+        <div class="popup-status">Scanning… (84 messages)</div>
+
+        <div class="popup-diag">
+          <div class="popup-diag-title">Diagnostics</div>
+          <div class="diag-row"><span class="k">Platform</span><span class="v">ChatGPT</span></div>
+          <div class="diag-row"><span class="k">Source</span><span class="v">state</span></div>
+          <div class="diag-row"><span class="k">Confidence</span><span class="v high">High · 0.94</span></div>
+          <div class="diag-row"><span class="k">Messages</span><span class="v">84</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Features ── -->
+  <section id="features">
+    <div class="section-label">Features</div>
+    <h2>Built to stay working<br>when sites change.</h2>
+    <p class="section-sub">Most exporters break because they rely on a single set of fragile selectors. ChatArchive uses per-platform adapters with multiple fallback strategies.</p>
+
+    <div class="features-grid">
+      <div class="feature-card c-orange">
+        <div class="feature-icon">⚡</div>
+        <h3>Layered Extraction</h3>
+        <p>API → page state → DOM scroll, with automatic fallback. Prefers stable data sources when the platform exposes them.</p>
+      </div>
+      <div class="feature-card c-mint">
+        <div class="feature-icon">↕</div>
+        <h3>Full-History Auto-Scroll</h3>
+        <p>Viewport-based scrolling with batched DOM collection. Handles lazy-loaded conversations on all supported platforms.</p>
+      </div>
+      <div class="feature-card c-blue">
+        <div class="feature-icon">🔬</div>
+        <h3>Popup Diagnostics</h3>
+        <p>See exactly how each extraction worked — source, strategy, confidence score, and message count, right in the popup.</p>
+      </div>
+      <div class="feature-card c-yellow">
+        <div class="feature-icon">📁</div>
+        <h3>Filename Templates</h3>
+        <p>Use tokens like <code style="font-size:11px;background:rgba(255,255,255,.1);padding:1px 5px;border-radius:4px">{platform}</code>, <code style="font-size:11px;background:rgba(255,255,255,.1);padding:1px 5px;border-radius:4px">{title}</code>, <code style="font-size:11px;background:rgba(255,255,255,.1);padding:1px 5px;border-radius:4px">{date}</code> to keep your archive organised automatically.</p>
+      </div>
+      <div class="feature-card c-purple">
+        <div class="feature-icon">⏹</div>
+        <h3>Stop &amp; Save</h3>
+        <p>Press <kbd style="font-size:11px;background:rgba(255,255,255,.1);padding:1px 5px;border-radius:4px">Ctrl+Shift+S</kbd> at any point to save what's been captured so far — useful for very long conversations.</p>
+      </div>
+      <div class="feature-card c-orange">
+        <div class="feature-icon">🧪</div>
+        <h3>Regression Tests</h3>
+        <p>Fixture-based extraction tests with jsdom, plus scheduled live Playwright smoke checks to keep platform support visible.</p>
+      </div>
+      <div class="feature-card c-mint">
+        <div class="feature-icon">💾</div>
+        <h3>Persistent Settings</h3>
+        <p>Format preference, filename template, message limit, and scroll speed are all saved across browser sessions.</p>
+      </div>
+      <div class="feature-card c-blue">
+        <div class="feature-icon">📋</div>
+        <h3>Copy to Clipboard</h3>
+        <p>Skip the file download entirely — copy the formatted conversation straight to your clipboard with one click.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How it works ── -->
+  <section id="how">
+    <div class="section-label">How it works</div>
+    <h2>Three steps.</h2>
+    <p class="section-sub">No configuration needed. Open any supported chat, click the extension.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Open a chat</h3>
+        <p>Navigate to any supported AI assistant with a conversation you want to save.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Click Export</h3>
+        <p>ChatArchive detects the platform, scrolls through the full history, and extracts every message.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Save locally</h3>
+        <p>Your conversation downloads as a clean file in whichever format you chose. Nothing is uploaded.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Formats ── -->
+  <section id="formats">
+    <div class="section-label">Export Formats</div>
+    <h2>Seven formats.<br>One click.</h2>
+    <p class="section-sub">From Obsidian vaults to data pipelines — pick the format that fits your workflow.</p>
+
+    <div class="formats-grid">
+      <div class="format-pill">
+        <span class="fmt-name" style="color:var(--orange)">Markdown</span>
+        <span class="fmt-desc">Clean .md for any notes app</span>
+      </div>
+      <div class="format-pill">
+        <span class="fmt-name" style="color:var(--purple)">Obsidian MD</span>
+        <span class="fmt-desc">Vault-ready with frontmatter</span>
+      </div>
+      <div class="format-pill">
+        <span class="fmt-name" style="color:#ff7f7a">PDF</span>
+        <span class="fmt-desc">Print-ready local rendering</span>
+      </div>
+      <div class="format-pill">
+        <span class="fmt-name" style="color:var(--blue)">HTML</span>
+        <span class="fmt-desc">Styled, self-contained file</span>
+      </div>
+      <div class="format-pill">
+        <span class="fmt-name" style="color:var(--mint)">JSON</span>
+        <span class="fmt-desc">Structured for tooling</span>
+      </div>
+      <div class="format-pill">
+        <span class="fmt-name" style="color:var(--yellow)">CSV</span>
+        <span class="fmt-desc">Spreadsheet-friendly rows</span>
+      </div>
+      <div class="format-pill">
+        <span class="fmt-name" style="color:rgba(255,255,255,.7)">Plain Text</span>
+        <span class="fmt-desc">Simple and portable</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Platforms ── -->
+  <section id="platforms" style="background:rgba(0,0,0,.1)">
+    <div class="section-label">Supported Platforms</div>
+    <h2>13 AI assistants<br>and counting.</h2>
+    <p class="section-sub">Each platform has its own dedicated adapter with multiple extraction strategies and automatic fallback.</p>
+    <div class="platforms-grid">
+      <span class="platform-tag">ChatGPT</span>
+      <span class="platform-tag">Gemini</span>
+      <span class="platform-tag">Claude</span>
+      <span class="platform-tag">Perplexity</span>
+      <span class="platform-tag">Grok</span>
+      <span class="platform-tag">DeepSeek</span>
+      <span class="platform-tag">Mistral</span>
+      <span class="platform-tag">HuggingChat</span>
+      <span class="platform-tag">Meta AI</span>
+      <span class="platform-tag">Poe</span>
+      <span class="platform-tag">Copilot</span>
+      <span class="platform-tag">Phind</span>
+      <span class="platform-tag">You.com</span>
+    </div>
+  </section>
+
+  <!-- ── Privacy ── -->
+  <section id="privacy">
+    <div class="section-label">Privacy</div>
+    <h2>Your chats stay yours.</h2>
+    <p class="section-sub" style="margin:0 auto 52px;">ChatArchive has no server. Every byte of processing happens inside your browser.</p>
+    <div class="privacy-points">
+      <div class="privacy-card">
+        <div class="privacy-icon">🔒</div>
+        <h3>No backend</h3>
+        <p>There is no server. Exports are generated entirely within your browser's local context.</p>
+      </div>
+      <div class="privacy-card">
+        <div class="privacy-icon">📡</div>
+        <h3>No data transmitted</h3>
+        <p>Nothing is uploaded, logged, or shared. Your conversations never leave your machine.</p>
+      </div>
+      <div class="privacy-card">
+        <div class="privacy-icon">👁</div>
+        <h3>Open source</h3>
+        <p>The full source code is on GitHub. You can read, audit, or fork every line.</p>
+      </div>
+      <div class="privacy-card">
+        <div class="privacy-icon">🚫</div>
+        <h3>No tracking</h3>
+        <p>No analytics, no usage reporting, no advertising. The extension does one thing.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ── -->
+  <section class="cta-section bg-gradient">
+    <div class="hero-badge">Free · Open Source · No sign-up</div>
+    <h2 style="max-width:600px">Start archiving your<br>AI conversations today.</h2>
+    <div class="hero-actions">
+      <a class="btn btn-orange" href="https://chrome.google.com/webstore" target="_blank">Add to Chrome — it's free</a>
+      <a class="btn btn-outline" href="https://github.com/weiyuankong/ChatArchive" target="_blank">View source on GitHub</a>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer>
+    <span>© 2026 ChatArchive · MIT License</span>
+    <div class="footer-links">
+      <a href="https://github.com/weiyuankong/ChatArchive" target="_blank">GitHub</a>
+      <a href="https://github.com/weiyuankong/ChatArchive/blob/main/PRIVACY.md" target="_blank">Privacy Policy</a>
+      <a href="https://github.com/weiyuankong/ChatArchive/blob/main/CHANGELOG.md" target="_blank">Changelog</a>
+      <a href="https://github.com/weiyuankong/ChatArchive/issues" target="_blank">Report an Issue</a>
+    </div>
+  </footer>
+
+</body>
+</html>

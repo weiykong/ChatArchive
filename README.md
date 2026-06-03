@@ -14,7 +14,7 @@ The project currently focuses on reliable export, readable Markdown, and maintai
 
 > Export chats from ChatGPT, Gemini, Claude, Perplexity, Grok, DeepSeek, Mistral, HuggingChat, Meta AI, Poe, Copilot, Phind, and You.com into clean Markdown, Obsidian, PDF, HTML, text, JSON, and CSV files without sending your data to a backend.
 
-[Download latest release](https://github.com/Weiykong/ChatArchive/releases) · [Load unpacked in Chromium](#local-setup) · [See supported platforms](#supported-platforms)
+[Website](https://weiyuankong.github.io/ChatArchive) · [Download latest release](https://github.com/weiyuankong/ChatArchive/releases) · [Load unpacked in Chromium](#local-setup) · [See supported platforms](#supported-platforms)
 
 ## Why ChatArchive
 

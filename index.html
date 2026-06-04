@@ -184,16 +184,18 @@
     .popup-wrap {
       position: relative;
       margin-top: 20px;
-      filter: drop-shadow(0 32px 64px rgba(0,0,0,.5));
+      filter: drop-shadow(0 32px 64px rgba(0,0,0,.45));
     }
 
     .browser-chrome {
-      background: #f1f3f4;
-      border-radius: 14px 14px 0 0;
-      padding: 10px 14px;
       display: flex;
       align-items: center;
       gap: 10px;
+      padding: 10px 14px;
+      background: #eef1f5;
+      border-radius: 16px 16px 0 0;
+      border: 1px solid rgba(255,255,255,.45);
+      border-bottom: 0;
     }
     .traffic-lights { display: flex; gap: 6px; }
     .tl { width: 11px; height: 11px; border-radius: 50%; }
@@ -202,120 +204,166 @@
     .tl-g { background: #28ca41; }
     .url-bar {
       flex: 1;
-      background: #e8eaed;
-      border-radius: 6px;
       padding: 4px 10px;
-      font-size: 11px;
-      color: #5f6368;
+      border-radius: 7px;
+      background: #fff;
+      color: #667085;
+      font: 11px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
       text-align: center;
-      font-family: monospace;
     }
 
     .popup-body {
-      background: #fff;
-      border-radius: 0 0 14px 14px;
+      width: 360px;
       padding: 16px;
-      width: 290px;
+      background: #f6f7f9;
+      border-radius: 0 0 16px 16px;
+      color: #17181c;
+      text-align: left;
     }
 
     .popup-header {
       display: flex;
       align-items: center;
-      gap: 9px;
+      gap: 10px;
       margin-bottom: 12px;
     }
-    .popup-icon {
-      width: 28px; height: 22px;
-      background: #fff8ee;
-      border-radius: 6px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 3px;
-      padding: 4px 5px;
+    .popup-logo { width: 36px; height: 36px; border-radius: 8px; }
+    .popup-heading { flex: 1; min-width: 0; }
+    .popup-kicker {
+      margin-bottom: 1px;
+      color: #667085;
+      font-size: 11px;
+      font-weight: 650;
     }
-    .popup-icon span {
-      display: block;
-      height: 3px;
-      border-radius: 2px;
-      background: #ff7b4a;
+    .popup-title { font-size: 17px; font-weight: 760; color: #17181c; }
+    .popup-local-pill {
+      padding: 5px 8px;
+      border: 1px solid #b7e8d5;
+      border-radius: 999px;
+      background: #e8f7f1;
+      color: #08745f;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
     }
-    .popup-icon span:nth-child(2) { width: 75%; }
-    .popup-icon span:nth-child(3) { width: 55%; }
-
-    .popup-title { font-size: 14px; font-weight: 700; color: #3c4043; }
+    .popup-description {
+      margin: 0 0 12px;
+      color: #667085;
+      font-size: 12.5px;
+      line-height: 1.4;
+    }
 
     .detected-chip {
-      background: #e8f0fe;
-      border: 1px solid #c5d6fc;
-      border-radius: 8px;
-      padding: 8px 12px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      margin-bottom: 14px;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding: 9px 10px;
+      border: 1px solid #b7e8d5;
+      border-radius: 8px;
+      background: #e8f7f1;
+      color: #08745f;
+      font-size: 12px;
+      font-weight: 700;
     }
-    .detected-chip .left { display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: #1a73e8; }
-    .detected-chip .dot { width: 8px; height: 8px; border-radius: 50%; background: #1a73e8; }
-    .detected-chip .right { font-size: 10px; color: #1a73e8; opacity: .7; }
+    .detected-chip .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: currentColor;
+      box-shadow: 0 0 0 4px rgba(8,116,95,.14);
+    }
 
-    .popup-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #5f6368; margin-bottom: 6px; }
-
+    .popup-card,
+    .popup-status-card {
+      border: 1px solid #e1e5ea;
+      border-radius: 8px;
+      background: #fff;
+    }
+    .popup-card { padding: 12px; }
+    .popup-label {
+      margin-bottom: 7px;
+      color: #667085;
+      font-size: 11px;
+      font-weight: 700;
+    }
     .popup-select {
       width: 100%;
-      border: 1px solid #dadce0;
-      border-radius: 8px;
-      padding: 10px;
-      font-size: 13px;
-      color: #3c4043;
+      min-height: 38px;
       margin-bottom: 12px;
-      background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%235f6368'/%3E%3C/svg%3E") no-repeat right 10px center;
-      appearance: none;
-    }
-
-    .popup-btn-primary {
-      width: 100%;
-      background: #1a73e8;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 12px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-bottom: 10px;
-    }
-
-    .popup-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-    .popup-btn-sec {
-      border: 1px solid #dadce0;
-      border-radius: 10px;
-      padding: 10px;
-      font-size: 12px;
-      font-weight: 600;
-      color: #1a73e8;
+      padding: 8px 10px;
+      border: 1px solid #cfd6df;
+      border-radius: 8px;
       background: #fff;
-      cursor: pointer;
+      color: #17181c;
+      font-size: 13px;
+    }
+    .popup-check {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 12px;
+      padding: 9px 10px;
+      border: 1px solid #e1e5ea;
+      border-radius: 8px;
+      background: #f1f4f8;
+      color: #17181c;
+      font-size: 12.5px;
+    }
+    .popup-check-box {
+      width: 15px;
+      height: 15px;
+      border-radius: 4px;
+      background: #255ee8;
+      color: #fff;
+      font-size: 11px;
+      line-height: 15px;
       text-align: center;
     }
-
-    .popup-progress-bar { height: 4px; background: #e8eaed; border-radius: 2px; overflow: hidden; margin-bottom: 6px; }
-    .popup-progress-fill { height: 100%; width: 65%; background: #1a73e8; border-radius: 2px; animation: progress-anim 2s ease-in-out infinite alternate; }
-    @keyframes progress-anim { from { width: 40%; } to { width: 85%; } }
-
-    .popup-status { font-size: 11px; color: #9aa0a6; text-align: center; margin-bottom: 12px; }
-
-    .popup-diag {
-      background: #f8f9fa;
-      border: 1px solid #dadce0;
-      border-radius: 10px;
+    .popup-btn-primary,
+    .popup-btn-sec {
+      border-radius: 8px;
       padding: 10px 12px;
+      font-size: 13px;
+      font-weight: 740;
+      text-align: center;
     }
-    .popup-diag-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #5f6368; margin-bottom: 8px; }
-    .diag-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px; }
-    .diag-row .k { color: #5f6368; }
-    .diag-row .v { font-weight: 600; color: #3c4043; }
-    .diag-row .v.high { background: #e6f4ea; color: #188038; padding: 1px 7px; border-radius: 10px; font-size: 10px; }
+    .popup-btn-primary {
+      margin-bottom: 8px;
+      background: #17181c;
+      color: #fff;
+    }
+    .popup-btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .popup-btn-sec {
+      border: 1px solid #cfd6df;
+      background: #fff;
+      color: #17181c;
+    }
+    .popup-btn-sec.muted {
+      background: #f1f4f8;
+      color: #667085;
+    }
+    .popup-advanced {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border: 1px solid #e1e5ea;
+      border-radius: 8px;
+      background: #f6f7f9;
+      color: #17181c;
+      font-size: 13px;
+      font-weight: 740;
+    }
+    .popup-status-card {
+      margin-top: 10px;
+      padding: 10px;
+      color: #667085;
+      font-size: 12px;
+      font-weight: 650;
+    }
 
     /* ── Section layout ── */
     section { padding: 88px 5%; }
@@ -588,41 +636,45 @@
       </div>
       <div class="popup-body">
         <div class="popup-header">
-          <div class="popup-icon">
-            <span style="width:100%"></span>
-            <span></span>
-            <span></span>
+          <img class="popup-logo" src="assets/icon-32.png" alt="">
+          <div class="popup-heading">
+            <div class="popup-kicker">Local chat export</div>
+            <div class="popup-title">ChatArchive</div>
           </div>
-          <span class="popup-title">ChatArchive</span>
+          <span class="popup-local-pill">Local only</span>
         </div>
+
+        <p class="popup-description">Save the active conversation as a clean file without sending content to a server.</p>
 
         <div class="detected-chip">
-          <div class="left"><div class="dot"></div>Detected: ChatGPT</div>
-          <div class="right">✓ Supported</div>
+          <span class="dot"></span>
+          Detected site: ChatGPT
         </div>
 
-        <div class="popup-label">Export Format</div>
-        <select class="popup-select">
-          <option>Markdown</option>
-          <option>PDF</option>
-          <option>JSON</option>
-        </select>
+        <div class="popup-card">
+          <div class="popup-label">Export format</div>
+          <select class="popup-select" aria-label="Export format">
+            <option>Markdown (.md)</option>
+            <option>PDF (.pdf)</option>
+            <option>JSON (.json)</option>
+          </select>
 
-        <button class="popup-btn-primary">⬇ Export Chat</button>
-        <div class="popup-btn-row">
-          <div class="popup-btn-sec">⎘ Copy</div>
-          <div class="popup-btn-sec">⎙ Save PDF</div>
+          <div class="popup-check">
+            <span class="popup-check-box">&#10003;</span>
+            Include metadata header
+          </div>
+
+          <div class="popup-btn-primary">Export Chat</div>
+          <div class="popup-btn-row">
+            <div class="popup-btn-sec">Copy</div>
+            <div class="popup-btn-sec muted">Stop &amp; Save</div>
+          </div>
         </div>
 
-        <div class="popup-progress-bar"><div class="popup-progress-fill"></div></div>
-        <div class="popup-status">Scanning… (84 messages)</div>
+        <div class="popup-advanced">Advanced options</div>
 
-        <div class="popup-diag">
-          <div class="popup-diag-title">Diagnostics</div>
-          <div class="diag-row"><span class="k">Platform</span><span class="v">ChatGPT</span></div>
-          <div class="diag-row"><span class="k">Source</span><span class="v">state</span></div>
-          <div class="diag-row"><span class="k">Confidence</span><span class="v high">High · 0.94</span></div>
-          <div class="diag-row"><span class="k">Messages</span><span class="v">84</span></div>
+        <div class="popup-status-card">
+          Ready to export from the active tab.
         </div>
       </div>
     </div>

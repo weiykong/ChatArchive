@@ -7,14 +7,21 @@ const INJECTED_FILES = [
   "src/content/runner.js"
 ];
 
-const SUPPORTED_HOSTS = {
-  "chatgpt.com": "ChatGPT",
-  "gemini.google.com": "Gemini",
-  "chat.deepseek.com": "DeepSeek",
-  "grok.com": "Grok",
-  "perplexity.ai": "Perplexity",
-  "claude.ai": "Claude"
-};
+const SUPPORTED_SITES = [
+  { patterns: ["chatgpt.com"], name: "ChatGPT" },
+  { patterns: ["gemini.google.com"], name: "Gemini" },
+  { patterns: ["chat.deepseek.com"], name: "DeepSeek" },
+  { patterns: ["grok.com"], name: "Grok" },
+  { patterns: ["perplexity.ai"], name: "Perplexity" },
+  { patterns: ["claude.ai"], name: "Claude" },
+  { patterns: ["chat.mistral.ai"], name: "Mistral" },
+  { patterns: ["huggingface.co/chat"], name: "HuggingChat" },
+  { patterns: ["meta.ai"], name: "Meta AI" },
+  { patterns: ["poe.com"], name: "Poe" },
+  { patterns: ["copilot.microsoft.com", "bing.com/chat"], name: "Copilot" },
+  { patterns: ["phind.com"], name: "Phind" },
+  { patterns: ["you.com"], name: "You.com" }
+];
 
 const REPOSITORY_ISSUES_URL = "https://github.com/weiyuankong/ChatArchive/issues/new";
 const PRINT_JOB_PREFIX = "chatArchivePrintJob:";
@@ -70,7 +77,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   const currentHost = getHostName(tab?.url);
-  const supportedName = currentHost && SUPPORTED_HOSTS[currentHost];
+  const supportedName = getSupportedSiteName(tab?.url);
 
   if (supportedName) {
     supportText.textContent = `Detected site: ${supportedName}`;
@@ -104,8 +111,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     scrollSpeedInput.value = settings.scrollSpeed;
   }
   if (settings.settingsPanelOpen) {
-    settingsToggle.classList.add("open");
-    settingsPanel.classList.add("open");
+    setSettingsOpen(true);
   }
 
   if (filenameTemplateInput.value) {
@@ -148,10 +154,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   settingsToggle.addEventListener("click", () => {
-    settingsToggle.classList.toggle("open");
-    settingsPanel.classList.toggle("open");
+    setSettingsOpen(!settingsPanel.classList.contains("open"));
     persistSettings();
   });
+
+  function setSettingsOpen(isOpen) {
+    settingsToggle.classList.toggle("open", isOpen);
+    settingsPanel.classList.toggle("open", isOpen);
+    settingsToggle.setAttribute("aria-expanded", String(isOpen));
+  }
 
   if (!tab?.id || !tab.url?.startsWith("http")) {
     exportButton.disabled = true;
@@ -528,6 +539,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 function getHostName(url) {
   try {
     return new URL(url).hostname;
+  } catch {
+    return "";
+  }
+}
+
+function getSupportedSiteName(url) {
+  try {
+    const parsedUrl = new URL(url);
+    const pageKey = `${parsedUrl.hostname}${parsedUrl.pathname}`.toLowerCase();
+    const site = SUPPORTED_SITES.find(({ patterns }) =>
+      patterns.some((pattern) => pageKey.includes(pattern))
+    );
+
+    return site?.name || "";
   } catch {
     return "";
   }

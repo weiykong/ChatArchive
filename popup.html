@@ -5,32 +5,62 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ChatArchive</title>
   <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
     :root {
-      --primary-color: #1a73e8;
-      --hover-color: #1557b0;
-      --bg-color: #ffffff;
-      --text-color: #3c4043;
-      --secondary-text: #5f6368;
-      --border-color: #dadce0;
-      --border-radius: 12px;
+      color-scheme: light dark;
+      --canvas: #f6f7f9;
+      --surface: #ffffff;
+      --surface-soft: #f1f4f8;
+      --text: #17181c;
+      --muted: #667085;
+      --line: #e1e5ea;
+      --line-strong: #cfd6df;
+      --primary: #17181c;
+      --primary-hover: #2a2c32;
+      --primary-text: #ffffff;
+      --accent: #255ee8;
+      --accent-soft: #edf2ff;
+      --success: #08745f;
+      --success-soft: #e8f7f1;
+      --success-line: #b7e8d5;
+      --shadow: 0 18px 42px rgba(17, 24, 39, 0.14);
+      --radius: 8px;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg-color: #202124;
-        --text-color: #e8eaed;
-        --secondary-text: #9aa0a6;
-        --border-color: #3c4043;
+        --canvas: #111214;
+        --surface: #181a1d;
+        --surface-soft: #202329;
+        --text: #f3f4f6;
+        --muted: #a2aab7;
+        --line: #2d3138;
+        --line-strong: #404550;
+        --primary: #f3f4f6;
+        --primary-hover: #ffffff;
+        --primary-text: #111214;
+        --accent: #7aa2ff;
+        --accent-soft: #1d2740;
+        --success: #7ee0c3;
+        --success-soft: #143229;
+        --success-line: #275847;
+        --shadow: none;
       }
     }
 
     body {
-      width: 280px;
-      padding: 16px;
+      width: 360px;
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      background-color: var(--bg-color);
-      color: var(--text-color);
+      background: var(--canvas);
+      color: var(--text);
+      font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    .app-shell {
+      padding: 16px;
     }
 
     .header {
@@ -40,186 +70,234 @@
       margin-bottom: 12px;
     }
 
-    .header h1 {
-      font-size: 16px;
+    .app-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .header-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .eyebrow,
+    .description,
+    .hint,
+    #status {
       margin: 0;
-      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .eyebrow {
+      margin-bottom: 1px;
+      font-size: 11px;
+      font-weight: 650;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--text);
+      font-size: 17px;
+      font-weight: 760;
+      letter-spacing: 0;
+    }
+
+    .privacy-pill {
+      flex: 0 0 auto;
+      padding: 5px 8px;
+      border: 1px solid var(--success-line);
+      border-radius: 999px;
+      background: var(--success-soft);
+      color: var(--success);
+      font-size: 11px;
+      font-weight: 700;
     }
 
     .description {
-      font-size: 13px;
-      color: var(--secondary-text);
-      margin-bottom: 16px;
-      line-height: 1.4;
+      margin-bottom: 12px;
+      font-size: 12.5px;
     }
 
     .supported-sites {
-      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding: 9px 10px;
+      border: 1px solid var(--success-line);
+      border-radius: var(--radius);
+      background: var(--success-soft);
+      color: var(--success);
       font-size: 12px;
-      color: var(--secondary-text);
-      padding: 10px 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      background: rgba(26, 115, 232, 0.06);
+      font-weight: 700;
+    }
+
+    .supported-sites::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: currentColor;
+      box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 16%, transparent);
+    }
+
+    .primary-panel,
+    .settings-panel,
+    .status-card,
+    .diagnostics {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+    }
+
+    .primary-panel {
+      padding: 12px;
     }
 
     .field {
-      margin-bottom: 16px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 7px;
+      margin-bottom: 12px;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
     }
 
     label {
+      color: var(--muted);
       font-size: 11px;
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--secondary-text);
+    }
+
+    select,
+    input[type="number"] {
+      width: 100%;
+      min-height: 38px;
+      padding: 8px 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      outline: none;
+      background: var(--surface);
+      color: var(--text);
+      font: inherit;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
     }
 
     select {
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      font-size: 13px;
-      outline: none;
       cursor: pointer;
     }
 
-    select:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    select:focus,
+    input[type="number"]:focus,
+    button:focus-visible {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
     }
 
     .checkbox-row {
       display: flex;
       align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      color: var(--text-color);
+      gap: 9px;
+      color: var(--text);
+      font-size: 12.5px;
     }
 
-    .checkbox-row input {
+    .metadata-row {
+      margin-bottom: 12px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-soft);
+    }
+
+    input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
       margin: 0;
+      accent-color: var(--accent);
+      cursor: pointer;
     }
 
     button {
       width: 100%;
-      padding: 12px;
+      min-height: 40px;
+      padding: 9px 12px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      background: var(--primary);
+      color: var(--primary-text);
       cursor: pointer;
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      border-radius: var(--border-radius);
-      font-weight: 600;
-      font-size: 14px;
-      transition: all 0.2s;
+      font: inherit;
+      font-weight: 740;
+      transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease, transform 0.16s ease;
     }
 
     button:hover {
-      background-color: var(--hover-color);
-      box-shadow: 0 2px 6px rgba(26, 115, 232, 0.3);
+      background: var(--primary-hover);
     }
 
     button:active {
-      transform: scale(0.98);
+      transform: translateY(1px);
     }
 
     button:disabled {
-      background-color: #ccc;
-      color: #888;
+      border-color: var(--line);
+      background: var(--surface-soft);
+      color: var(--muted);
       cursor: not-allowed;
-      box-shadow: none;
+      transform: none;
     }
 
     .secondary-button {
-      background-color: transparent;
-      color: var(--primary-color);
-      border: 1px solid var(--border-color);
-      box-shadow: none;
+      border-color: var(--line-strong);
+      background: var(--surface);
+      color: var(--text);
+      font-weight: 700;
     }
 
     .secondary-button:hover {
-      background-color: rgba(26, 115, 232, 0.08);
-      box-shadow: none;
+      border-color: var(--text);
+      background: var(--surface-soft);
+    }
+
+    .secondary-button:disabled {
+      border-color: var(--line);
+      background: var(--surface-soft);
+      color: var(--muted);
     }
 
     .button-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    .hint {
-      margin-top: 10px;
-      font-size: 11px;
-      line-height: 1.4;
-      color: var(--secondary-text);
-    }
-
-    #status {
-      margin-top: 16px;
-      font-size: 12px;
-      text-align: center;
-      color: var(--secondary-text);
-      font-weight: 500;
-      min-height: 18px;
-    }
-
-    .progress-bar {
-      height: 4px;
-      width: 100%;
-      background-color: var(--border-color);
-      border-radius: 2px;
+      gap: 8px;
       margin-top: 8px;
-      overflow: hidden;
-      display: none;
-    }
-
-    .progress-fill {
-      height: 100%;
-      width: 0%;
-      background-color: var(--primary-color);
-      transition: width 0.3s ease;
-    }
-
-    @keyframes loading {
-      0% { width: 0%; }
-      50% { width: 70%; }
-      100% { width: 100%; }
-    }
-
-    .loading .progress-fill {
-      animation: loading 4s infinite ease-in-out;
     }
 
     .settings-toggle {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      cursor: pointer;
-      padding: 8px 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      margin-bottom: 12px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--secondary-text);
-      user-select: none;
-      transition: background 0.15s;
+      min-height: 38px;
+      margin: 12px 0 8px;
+      border-color: var(--line);
+      background: transparent;
+      color: var(--text);
+      font-weight: 730;
     }
 
     .settings-toggle:hover {
-      background: rgba(26, 115, 232, 0.06);
+      border-color: var(--line-strong);
+      background: var(--surface-soft);
     }
 
     .settings-toggle .arrow {
-      font-size: 10px;
-      transition: transform 0.2s;
+      color: var(--muted);
+      font-size: 11px;
+      transition: transform 0.16s ease;
     }
 
     .settings-toggle.open .arrow {
@@ -228,74 +306,118 @@
 
     .settings-panel {
       display: none;
-      padding: 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
       margin-bottom: 12px;
-      background: rgba(26, 115, 232, 0.03);
+      padding: 12px;
     }
 
     .settings-panel.open {
       display: block;
     }
 
-    .settings-panel .field {
-      margin-bottom: 12px;
-    }
-
-    .settings-panel .field:last-child {
-      margin-bottom: 0;
-    }
-
     .token-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 4px 12px;
+      gap: 7px 12px;
     }
 
-    .token-grid .checkbox-row {
-      font-size: 12px;
-    }
-
-    .token-grid .checkbox-row code {
+    .token-grid code,
+    .hint code,
+    .hint kbd {
+      border-radius: 6px;
+      background: var(--accent-soft);
+      color: var(--accent);
       font-size: 11px;
-      background: rgba(26, 115, 232, 0.08);
-      padding: 1px 4px;
-      border-radius: 3px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    .token-grid code {
+      padding: 2px 6px;
     }
 
     .template-preview {
-      margin-top: 6px;
-      font-size: 11px;
-      color: var(--secondary-text);
-      word-break: break-all;
+      margin-top: 8px;
+      padding: 8px 9px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-soft);
+      color: var(--muted);
+      font-size: 11.5px;
       line-height: 1.4;
-      padding: 6px 8px;
-      background: rgba(0, 0, 0, 0.04);
-      border-radius: 6px;
+      word-break: break-all;
     }
 
-    @media (prefers-color-scheme: dark) {
-      .template-preview {
-        background: rgba(255, 255, 255, 0.04);
-      }
+    .hint {
+      margin-top: 10px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-soft);
+      font-size: 11.5px;
+    }
+
+    .hint code,
+    .hint kbd {
+      padding: 1px 5px;
+    }
+
+    .status-card {
+      margin-top: 10px;
+      padding: 10px;
+    }
+
+    #status {
+      min-height: 18px;
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    #status:empty::before {
+      content: "Ready to export from the active tab.";
+    }
+
+    .progress-bar {
+      display: none;
+      width: 100%;
+      height: 4px;
+      margin-top: 8px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: var(--line);
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--success));
+      transition: width 0.3s ease;
+    }
+
+    @keyframes loading {
+      0% { width: 8%; transform: translateX(0); }
+      50% { width: 74%; transform: translateX(18%); }
+      100% { width: 8%; transform: translateX(960%); }
+    }
+
+    .loading .progress-fill {
+      animation: loading 1.7s ease-in-out infinite;
+    }
+
+    .utility-actions {
+      margin-top: 8px;
     }
 
     .diagnostics {
-      margin-top: 14px;
-      padding: 12px;
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-      background: rgba(15, 118, 110, 0.06);
       display: none;
+      margin-top: 10px;
+      padding: 11px 12px;
     }
 
     .diagnostics h2 {
-      margin: 0 0 8px;
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--secondary-text);
+      margin: 0 0 9px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 760;
     }
 
     .diagnostics-grid {
@@ -305,136 +427,165 @@
       font-size: 12px;
     }
 
+    .diagnostics-grid div:last-child {
+      grid-column: 1 / -1;
+    }
+
     .diagnostics-grid strong {
       display: block;
-      font-size: 11px;
-      color: var(--secondary-text);
-      margin-bottom: 2px;
+      margin-bottom: 1px;
+      color: var(--muted);
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+
+    .diagnostics-grid span {
+      color: var(--text);
+      overflow-wrap: anywhere;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>ChatArchive</h1>
-  </div>
-  <p class="description">Export active conversations with layered extraction strategies and full-history auto-scroll.</p>
-
-  <div class="supported-sites" id="siteSupport">
-    Supported today: ChatGPT, Gemini, DeepSeek, Grok, Perplexity, Claude
-  </div>
-  
-  <div class="settings-toggle" id="settingsToggle">
-    <span>Settings</span>
-    <span class="arrow">&#9660;</span>
-  </div>
-
-  <div class="settings-panel" id="settingsPanel">
-    <div class="field">
-      <label for="formatSelect">Export Format</label>
-      <select id="formatSelect">
-        <option value="md">Markdown (.md)</option>
-        <option value="obsidian">Obsidian Markdown (.md)</option>
-        <option value="pdf">PDF (.pdf)</option>
-        <option value="html">HTML (.html)</option>
-        <option value="txt">Plain Text (.txt)</option>
-        <option value="json">JSON (.json)</option>
-        <option value="csv">CSV (.csv)</option>
-      </select>
-    </div>
-
-    <div class="field">
-      <label>Filename Template</label>
-      <div class="token-grid">
-        <div class="checkbox-row">
-          <input type="checkbox" id="tplPlatform" checked>
-          <span><code>{platform}</code></span>
-        </div>
-        <div class="checkbox-row">
-          <input type="checkbox" id="tplTitle" checked>
-          <span><code>{title}</code></span>
-        </div>
-        <div class="checkbox-row">
-          <input type="checkbox" id="tplDate" checked>
-          <span><code>{date}</code></span>
-        </div>
-        <div class="checkbox-row">
-          <input type="checkbox" id="tplTime">
-          <span><code>{time}</code></span>
-        </div>
-        <div class="checkbox-row">
-          <input type="checkbox" id="tplSource">
-          <span><code>{source}</code></span>
-        </div>
-        <div class="checkbox-row">
-          <input type="checkbox" id="tplStrategy">
-          <span><code>{strategy}</code></span>
-        </div>
-        <div class="checkbox-row">
-          <input type="checkbox" id="tplCount">
-          <span><code>{count}</code></span>
-        </div>
+  <main class="app-shell">
+    <header class="header">
+      <img class="app-icon" src="assets/icon-32.png" alt="" width="36" height="36">
+      <div class="header-copy">
+        <p class="eyebrow">Local chat export</p>
+        <h1>ChatArchive</h1>
       </div>
-      <div class="template-preview" id="templatePreview">[{platform}] {title} - {date}</div>
-      <input type="hidden" id="filenameTemplate" value="[{platform}] {title} - {date}">
+      <span class="privacy-pill">Local only</span>
+    </header>
+
+    <p class="description">Save the active conversation as a clean file without sending content to a server.</p>
+
+    <div class="supported-sites" id="siteSupport">
+      Supports 13 AI chat sites
     </div>
 
-    <div class="field">
-      <label for="messageLimit">Max Messages (0 for all)</label>
-      <input type="number" id="messageLimit" value="0" min="0" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-color); font-size: 13px;">
-    </div>
+    <section class="primary-panel" aria-label="Export controls">
+      <div class="field">
+        <label for="formatSelect">Export format</label>
+        <select id="formatSelect">
+          <option value="md">Markdown (.md)</option>
+          <option value="obsidian">Obsidian Markdown (.md)</option>
+          <option value="pdf">PDF (.pdf)</option>
+          <option value="html">HTML (.html)</option>
+          <option value="txt">Plain Text (.txt)</option>
+          <option value="json">JSON (.json)</option>
+          <option value="csv">CSV (.csv)</option>
+        </select>
+      </div>
 
-    <div class="field">
-      <label for="scrollSpeed">Scroll Delay (ms)</label>
-      <input type="number" id="scrollSpeed" value="200" min="50" step="50" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-color); font-size: 13px;">
-      <div class="hint" style="margin-top: 4px;">Lower = faster, higher = safer. Default 200.</div>
-    </div>
-
-    <div class="field">
-      <label>Options</label>
-      <div class="checkbox-row">
+      <div class="checkbox-row metadata-row">
         <input type="checkbox" id="includeMetadata" checked>
         <span>Include metadata header</span>
       </div>
+
+      <button id="exportBtn">Export Chat</button>
+
+      <div class="button-row">
+        <button id="copyBtn" class="secondary-button" type="button">Copy</button>
+        <button id="stopBtn" class="secondary-button" type="button" disabled>Stop &amp; Save</button>
+      </div>
+    </section>
+
+    <button class="settings-toggle" id="settingsToggle" type="button" aria-expanded="false" aria-controls="settingsPanel">
+      <span>Advanced options</span>
+      <span class="arrow" aria-hidden="true">&#9660;</span>
+    </button>
+
+    <div class="settings-panel" id="settingsPanel">
+      <div class="field">
+        <label>Filename template</label>
+        <div class="token-grid">
+          <div class="checkbox-row">
+            <input type="checkbox" id="tplPlatform" checked>
+            <span><code>{platform}</code></span>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="tplTitle" checked>
+            <span><code>{title}</code></span>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="tplDate" checked>
+            <span><code>{date}</code></span>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="tplTime">
+            <span><code>{time}</code></span>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="tplSource">
+            <span><code>{source}</code></span>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="tplStrategy">
+            <span><code>{strategy}</code></span>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="tplCount">
+            <span><code>{count}</code></span>
+          </div>
+        </div>
+        <div class="template-preview" id="templatePreview">[{platform}] {title} - {date}</div>
+        <input type="hidden" id="filenameTemplate" value="[{platform}] {title} - {date}">
+      </div>
+
+      <div class="field">
+        <label for="messageLimit">Max messages</label>
+        <input type="number" id="messageLimit" value="0" min="0">
+        <p class="hint">Use <code>0</code> to export the full conversation.</p>
+      </div>
+
+      <div class="field">
+        <label for="scrollSpeed">Scroll delay</label>
+        <input type="number" id="scrollSpeed" value="200" min="50" step="50">
+        <p class="hint">Lower is faster; higher is safer for long pages. Default is 200 ms.</p>
+      </div>
     </div>
-  </div>
 
-  <button id="exportBtn">Export Chat</button>
-
-  <div class="button-row">
-    <button id="copyBtn" class="secondary-button" type="button">Copy to Clipboard</button>
-    <button id="stopBtn" class="secondary-button" type="button" disabled>Stop & Save</button>
-  </div>
-
-  <div class="button-row">
-    <button id="copyReportBtn" class="secondary-button" type="button" disabled>Copy Debug</button>
-    <button id="reportIssueBtn" class="secondary-button" type="button" disabled>Report Issue</button>
-  </div>
-
-  <button id="refreshStatusBtn" class="secondary-button" style="margin-top: 10px;">Refresh Status</button>
-
-  <div class="hint" id="runtimeHint">
-    DOM scrolling can slow down or pause in a background tab. Use Stop & Save or <code>Ctrl/Command+Shift+S</code> to keep partial progress.
-  </div>
-  
-  <div id="statusContainer">
-    <div id="status"></div>
-    <div class="progress-bar" id="progressBar">
-      <div class="progress-fill"></div>
+    <div class="button-row utility-actions">
+      <button id="copyReportBtn" class="secondary-button" type="button" disabled>Copy Debug</button>
+      <button id="reportIssueBtn" class="secondary-button" type="button" disabled>Report Issue</button>
     </div>
-  </div>
 
-  <section class="diagnostics" id="diagnosticsPanel">
-    <h2>Last Export</h2>
-    <div class="diagnostics-grid">
-      <div><strong>Platform</strong><span id="diagPlatform">-</span></div>
-      <div><strong>Source</strong><span id="diagSource">-</span></div>
-      <div><strong>Strategy</strong><span id="diagStrategy">-</span></div>
-      <div><strong>Messages</strong><span id="diagMessages">-</span></div>
-      <div><strong>Confidence</strong><span id="diagConfidence">-</span></div>
-      <div><strong>Format</strong><span id="diagFormat">-</span></div>
-      <div><strong>File</strong><span id="diagFile">-</span></div>
+    <button id="refreshStatusBtn" class="secondary-button utility-actions" type="button">Refresh Status</button>
+
+    <p class="hint" id="runtimeHint">
+      DOM scrolling can slow down or pause in a background tab. Use Stop &amp; Save or <code>Ctrl/Command+Shift+S</code> to keep partial progress.
+    </p>
+
+    <div class="status-card" id="statusContainer">
+      <div id="status" aria-live="polite"></div>
+      <div class="progress-bar" id="progressBar">
+        <div class="progress-fill"></div>
+      </div>
     </div>
-  </section>
+
+    <section class="diagnostics" id="diagnosticsPanel">
+      <h2>Last export</h2>
+      <div class="diagnostics-grid">
+        <div><strong>Platform</strong><span id="diagPlatform">-</span></div>
+        <div><strong>Source</strong><span id="diagSource">-</span></div>
+        <div><strong>Strategy</strong><span id="diagStrategy">-</span></div>
+        <div><strong>Messages</strong><span id="diagMessages">-</span></div>
+        <div><strong>Confidence</strong><span id="diagConfidence">-</span></div>
+        <div><strong>Format</strong><span id="diagFormat">-</span></div>
+        <div><strong>File</strong><span id="diagFile">-</span></div>
+      </div>
+    </section>
+  </main>
 
   <script type="module" src="src/popup/popup.js"></script>
 </body>

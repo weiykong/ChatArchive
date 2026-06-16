@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ChatArchive",
   "version": "1.0.0",
-  "description": "Export AI chat conversations to Markdown, PDF, JSON, and more — locally, with no data sent to any server.",
+  "description": "Save your AI chat conversations as clean local files in the format you choose. No account, no server, fully private.",
   "permissions": ["activeTab", "scripting", "tabs", "storage", "clipboardWrite"],
   "background": {
     "service_worker": "src/background/service-worker.js"

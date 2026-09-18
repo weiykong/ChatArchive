@@ -6,19 +6,31 @@ const root = process.cwd();
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const outputDirectory = path.join(root, "dist");
 const outputFile = path.join(outputDirectory, `chatarchive-${packageJson.version}.zip`);
+
+// Files and directories to include in the extension zip
 const entries = [
   "manifest.json",
   "popup.html",
-  "src",
+  "sidepanel.html",
+  "offscreen.html",
   "assets",
-  "LICENSE"
+  "LICENSE",
+  // Vite outputs these to dist/
+  "service-worker.js",
+  "popup.js",
+  "sidepanel.js",
+  "offscreen.js",
+  "chunks",
+  "content.js",
+  "print.html",
+  "print.js"
 ];
 
 fs.mkdirSync(outputDirectory, { recursive: true });
 fs.rmSync(outputFile, { force: true });
 
 const result = spawnSync("zip", ["-rq", outputFile, ...entries], {
-  cwd: root,
+  cwd: outputDirectory,
   stdio: "inherit"
 });
 

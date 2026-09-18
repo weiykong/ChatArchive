@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatArchive Side Panel</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :root {
+      color-scheme: light dark;
+      --canvas: #f6f7f9; --surface: #ffffff; --surface-soft: #f1f4f8;
+      --text: #17181c; --muted: #667085; --line: #e1e5ea;
+      --primary: #17181c; --primary-hover: #2a2c32; --primary-text: #ffffff;
+      --accent: #255ee8; --accent-soft: #edf2ff;
+      --success: #08745f; --success-soft: #e8f7f1; --success-line: #b7e8d5;
+      --radius: 8px; --shadow: 0 18px 42px rgba(17,24,39,0.14);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --canvas: #111214; --surface: #181a1d; --surface-soft: #202329;
+        --text: #f3f4f6; --muted: #a2aab7; --line: #2d3138;
+        --primary: #f3f4f6; --primary-hover: #ffffff; --primary-text: #111214;
+        --accent: #7aa2ff; --accent-soft: #1d2740;
+        --success: #7ee0c3; --success-soft: #143229; --success-line: #275847;
+        --shadow: none; }
+    }
+    body { margin: 0; background: var(--canvas); color: var(--text);
+      font: 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .app-shell { padding: 16px; }
+    .header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .app-icon { width: 36px; height: 36px; border-radius: 8px; box-shadow: var(--shadow); }
+    .header-copy { min-width: 0; flex: 1; }
+    .eyebrow, .description, #status { margin: 0; color: var(--muted); }
+    .eyebrow { margin-bottom: 1px; font-size: 11px; font-weight: 650; }
+    h1 { margin: 0; color: var(--text); font-size: 17px; font-weight: 760; }
+    .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+    label { color: var(--muted); font-size: 11px; font-weight: 700; }
+    select, input[type="number"] { width: 100%; min-height: 38px; padding: 8px 10px;
+      border: 1px solid var(--line-strong); border-radius: var(--radius); outline: none;
+      background: var(--surface); color: var(--text); font: inherit; }
+    select:focus, input[type="number"]:focus, button:focus-visible {
+      border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent); }
+    .checkbox-row { display: flex; align-items: center; gap: 9px; color: var(--text); font-size: 12.5px; }
+    input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--accent); cursor: pointer; }
+    button { width: 100%; min-height: 40px; padding: 9px 12px; border: 1px solid transparent;
+      border-radius: var(--radius); background: var(--primary); color: var(--primary-text);
+      cursor: pointer; font: inherit; font-weight: 740; }
+    button:hover { background: var(--primary-hover); }
+    button:disabled { border-color: var(--line); background: var(--surface-soft); color: var(--muted); cursor: not-allowed; }
+    .secondary-button { border-color: var(--line-strong); background: var(--surface); color: var(--text); }
+    .secondary-button:hover { border-color: var(--text); background: var(--surface-soft); }
+    .button-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .settings-toggle { display: flex; align-items: center; justify-content: space-between;
+      min-height: 38px; margin: 12px 0 8px; border-color: var(--line); background: transparent;
+      color: var(--text); font-weight: 730; }
+    .settings-toggle:hover { border-color: var(--line-strong); background: var(--surface-soft); }
+    .settings-panel { display: none; margin-bottom: 12px; padding: 12px;
+      border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+    .settings-panel.open { display: block; }
+    .token-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px 12px; }
+    .token-grid code { border-radius: 6px; background: var(--accent-soft); color: var(--accent);
+      font-size: 11px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      padding: 2px 6px; }
+    .template-preview { margin-top: 8px; padding: 8px 9px; border: 1px solid var(--line);
+      border-radius: var(--radius); background: var(--surface-soft); color: var(--muted);
+      font-size: 11.5px; line-height: 1.4; word-break: break-all; }
+    .hint { margin-top: 10px; padding: 9px 10px; border: 1px solid var(--line);
+      border-radius: var(--radius); background: var(--surface-soft); font-size: 11.5px; }
+    .status-card { margin-top: 10px; padding: 10px;
+      border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+    #status { min-height: 18px; font-size: 12px; font-weight: 650; }
+    #status:empty::before { content: "Ready to export from the active tab."; }
+    .progress-bar { display: none; width: 100%; height: 4px; margin-top: 8px;
+      overflow: hidden; border-radius: 999px; background: var(--line); }
+    .progress-fill { width: 0%; height: 100%; border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--success));
+      transition: width 0.3s ease; }
+    .loading .progress-fill { animation: loading 1.7s ease-in-out infinite; }
+    @keyframes loading { 0% { width: 8%; transform: translateX(0); } 50% { width: 74%; transform: translateX(18%); } 100% { width: 8%; transform: translateX(960%); } }
+    .diagnostics { display: none; margin-top: 10px; padding: 11px 12px;
+      border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+    .diagnostics h2 { margin: 0 0 9px; color: var(--muted); font-size: 11px; font-weight: 760; }
+    .diagnostics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; font-size: 12px; }
+    .diagnostics-grid strong { display: block; margin-bottom: 1px; color: var(--muted); font-size: 10.5px; font-weight: 700; }
+    .diagnostics-grid span { color: var(--text); overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="header">
+      <img class="app-icon" src="assets/icon-32.png" alt="" width="36" height="36">
+      <div class="header-copy">
+        <p class="eyebrow">Local chat export</p>
+        <h1>ChatArchive</h1>
+      </div>
+    </header>
+    <p class="description">Save the active conversation as a clean file without sending content to a server.</p>
+    <section aria-label="Export controls">
+      <div class="field">
+        <label for="formatSelect">Export format</label>
+        <select id="formatSelect">
+          <option value="md">Markdown (.md)</option>
+          <option value="obsidian">Obsidian Markdown (.md)</option>
+          <option value="pdf">PDF (.pdf)</option>
+          <option value="html">HTML (.html)</option>
+          <option value="txt">Plain Text (.txt)</option>
+          <option value="json">JSON (.json)</option>
+          <option value="csv">CSV (.csv)</option>
+          <option value="jsonl">JSONL (.jsonl)</option>
+          <option value="parquet">Parquet (.parquet)</option>
+          <option value="md-frontmatter">Markdown + Frontmatter (.md)</option>
+          <option value="conversation-json">Conversation JSON (.json)</option>
+          <option value="rag-jsonl">RAG Chunks JSONL (.jsonl)</option>
+        </select>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="includeMetadata" checked>
+        <span>Include metadata header</span>
+      </div>
+      <button id="exportBtn">Export Chat</button>
+      <div class="button-row">
+        <button id="copyBtn" class="secondary-button" type="button">Copy</button>
+        <button id="stopBtn" class="secondary-button" type="button" disabled>Stop & Save</button>
+      </div>
+    </section>
+    <button class="settings-toggle" id="settingsToggle" type="button" aria-expanded="false" aria-controls="settingsPanel">
+      <span>Advanced options</span>
+      <span class="arrow" aria-hidden="true">&#9660;</span>
+    </button>
+    <div class="settings-panel" id="settingsPanel">
+      <div class="field">
+        <label>Filename template</label>
+        <div class="token-grid">
+          <div class="checkbox-row"><input type="checkbox" id="tplPlatform" checked><span><code>{platform}</code></span></div>
+          <div class="checkbox-row"><input type="checkbox" id="tplTitle" checked><span><code>{title}</code></span></div>
+          <div class="checkbox-row"><input type="checkbox" id="tplDate" checked><span><code>{date}</code></span></div>
+          <div class="checkbox-row"><input type="checkbox" id="tplTime"><span><code>{time}</code></span></div>
+          <div class="checkbox-row"><input type="checkbox" id="tplSource"><span><code>{source}</code></span></div>
+          <div class="checkbox-row"><input type="checkbox" id="tplStrategy"><span><code>{strategy}</code></span></div>
+          <div class="checkbox-row"><input type="checkbox" id="tplCount"><span><code>{count}</code></span></div>
+        </div>
+        <div class="template-preview" id="templatePreview">[{platform}] {title} - {date}</div>
+        <input type="hidden" id="filenameTemplate" value="[{platform}] {title} - {date}">
+      </div>
+      <div class="field">
+        <label for="messageLimit">Max messages</label>
+        <input type="number" id="messageLimit" value="0" min="0">
+        <p class="hint">Use <code>0</code> to export the full conversation.</p>
+      </div>
+      <div class="field">
+        <label for="scrollSpeed">Scroll delay</label>
+        <input type="number" id="scrollSpeed" value="200" min="50" step="50">
+        <p class="hint">Lower is faster; higher is safer for long pages. Default is 200 ms.</p>
+      </div>
+    </div>
+    <div class="button-row">
+      <button id="copyReportBtn" class="secondary-button" type="button" disabled>Copy Debug</button>
+      <button id="reportIssueBtn" class="secondary-button" type="button" disabled>Report Issue</button>
+    </div>
+    <button id="refreshStatusBtn" class="secondary-button" type="button">Refresh Status</button>
+    <p class="hint" id="runtimeHint">DOM scrolling can slow down or pause in a background tab. Use Stop & Save or <code>Ctrl/Command+Shift+S</code> to keep partial progress.</p>
+    <div class="status-card" id="statusContainer">
+      <div id="status" aria-live="polite"></div>
+      <div class="progress-bar" id="progressBar"><div class="progress-fill"></div></div>
+    </div>
+    <section class="diagnostics" id="diagnosticsPanel">
+      <h2>Last export</h2>
+      <div class="diagnostics-grid">
+        <div><strong>Platform</strong><span id="diagPlatform">-</span></div>
+        <div><strong>Source</strong><span id="diagSource">-</span></div>
+        <div><strong>Strategy</strong><span id="diagStrategy">-</span></div>
+        <div><strong>Messages</strong><span id="diagMessages">-</span></div>
+        <div><strong>Confidence</strong><span id="diagConfidence">-</span></div>
+        <div><strong>Format</strong><span id="diagFormat">-</span></div>
+        <div><strong>File</strong><span id="diagFile">-</span></div>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="src/sidepanel/sidepanel.ts"></script>
+</body>
+</html>

@@ -1,11 +1,20 @@
 {
   "manifest_version": 3,
   "name": "ChatArchive",
-  "version": "1.0.0",
+  "version": "1.13.0",
   "description": "Save your AI chat conversations as clean local files in the format you choose. No account, no server, fully private.",
-  "permissions": ["activeTab", "scripting", "tabs", "storage", "clipboardWrite"],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "tabs",
+    "storage",
+    "clipboardWrite",
+    "offscreen",
+    "sidePanel"
+  ],
   "background": {
-    "service_worker": "src/background/service-worker.js"
+    "service_worker": "service-worker.js",
+    "type": "module"
   },
   "commands": {
     "stop-and-save-export": {
@@ -36,5 +45,12 @@
       "32": "assets/icon-32.png",
       "48": "assets/icon-48.png"
     }
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "offscreen": {
+    "reasons": ["DOM_PARSER", "BLUETOOTH", "LOCAL_STORAGE", "WORKERS"],
+    "minimize": true
   }
 }

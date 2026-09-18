@@ -21,11 +21,11 @@
   }
 
   function sanitizeFilenameSegment(value) {
-    return normalizeWhitespace(String(value || ""))
-      .replace(/[<>:"/\\|?*\u0000-\u001f]/g, "_")
-      .replace(/_+/g, "_")
-      .trim();
-  }
+      return normalizeWhitespace(String(value || ""))
+        .replace(/[<>:"\/\\|?*\u0000-\u001f]/g, "_")
+        .replace(/_+/g, "_")
+        .trim();
+    }
 
   function escapeCsvField(value) {
     const text = String(value ?? "");

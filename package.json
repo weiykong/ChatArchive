@@ -4,15 +4,38 @@
   "private": true,
   "description": "Browser extension for exporting AI conversations with adapter-based extraction.",
   "scripts": {
-    "test": "node --test",
+    "dev": "vite build --watch",
+    "build": "node scripts/build.mjs",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "npm run build && playwright test",
     "test:live-smoke": "node scripts/live-smoke.js",
-    "package:extension": "node scripts/package-extension.js"
+    "generate:adapter": "node scripts/generate-adapter.mjs",
+    "package:extension": "npm run build && node scripts/package-extension.js"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.13.0"
+  },
+  "dependencies": {
+    "hyparquet-writer": "^0.16.9"
   },
   "devDependencies": {
-    "jsdom": "^26.1.0",
-    "playwright": "^1.54.2"
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
+    "@types/chrome": "^0.3.0",
+    "@types/node": "^24.0.0",
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0",
+    "jsdom": "^30.1.0",
+    "playwright": "^1.63.0",
+    "prettier": "^3.9.8",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.70.0",
+    "vite": "^8.3.0",
+    "vitest": "^5.0.1"
   }
 }

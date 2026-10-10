@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "vitest run",
+    "test": "node --test",
     "test:watch": "vitest",
     "test:e2e": "npm run build && playwright test",
     "test:live-smoke": "node scripts/live-smoke.js",

@@ -3,16 +3,22 @@ const path = require("node:path");
 const { chromium } = require("playwright");
 const { getContentFilePaths } = require("./content-files");
 const {
+  assessDrift,
   assessExtraction,
   buildLiveSmokeSummary,
   getTargetConfigs,
+  loadBaseline,
   sanitizeName
 } = require("./live-smoke-utils");
 
 const root = process.cwd();
+const baselineDir = path.join(root, process.env.SMOKE_BASELINE_DIR || "tests/baselines");
+const recordBaseline = process.env.SMOKE_RECORD_BASELINE === "1";
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const artifactRoot = path.join(root, process.env.SMOKE_ARTIFACT_DIR || "artifacts/live-smoke");
-const scriptSources = getContentFilePaths(root).map((filePath) => fs.readFileSync(filePath, "utf8"));
+const scriptSources = getContentFilePaths(root).map((filePath) =>
+  fs.readFileSync(filePath, "utf8")
+);
 
 async function writeArtifacts(page, targetDirectory, result, exportPayload) {
   fs.mkdirSync(targetDirectory, { recursive: true });
@@ -34,7 +40,11 @@ async function writeArtifacts(page, targetDirectory, result, exportPayload) {
   }
 
   if (exportPayload?.content) {
-    fs.writeFileSync(path.join(targetDirectory, exportPayload.filename), exportPayload.content, "utf8");
+    fs.writeFileSync(
+      path.join(targetDirectory, exportPayload.filename),
+      exportPayload.content,
+      "utf8"
+    );
   }
 }
 
@@ -48,7 +58,7 @@ async function extractFromPage(page) {
   return page.evaluate(async () => {
     const result = await window.ChatArchive.extractor.extractConversation(document);
     const confidence = result.messages.length
-      ? Math.max(0.2, Math.min(0.99, (result.score / result.messages.length) / 14))
+      ? Math.max(0.2, Math.min(0.99, result.score / result.messages.length / 14))
       : 0;
     const authors = Array.from(new Set(result.messages.map((message) => message.author)));
     const payload = window.ChatArchive.exporters.buildExportPayload(
@@ -135,6 +145,39 @@ async function runTarget(browser, target) {
     result.status = assessment.status;
     result.failureReason = assessment.failureReason;
 
+    if (result.status === "passed") {
+      const baseline = loadBaseline(target.id, baselineDir);
+      if (recordBaseline) {
+        fs.mkdirSync(baselineDir, { recursive: true });
+        fs.writeFileSync(
+          path.join(baselineDir, `${target.id}.json`),
+          JSON.stringify(
+            {
+              url: target.url,
+              strategyId: pageResult.extraction.strategyId,
+              source: pageResult.extraction.source,
+              messageCount: pageResult.extraction.messageCount,
+              authors: pageResult.extraction.authors,
+              recordedAt: new Date().toISOString()
+            },
+            null,
+            2
+          ) + "\n",
+          "utf8"
+        );
+        result.baseline = { recorded: true };
+      } else {
+        const drift = assessDrift(target, pageResult.extraction, baseline);
+        result.baseline = {
+          path: path.relative(root, path.join(baselineDir, `${target.id}.json`))
+        };
+        if (drift.status === "drifted") {
+          result.status = "drifted";
+          result.drift = drift;
+        }
+      }
+    }
+
     await writeArtifacts(page, targetDirectory, result, pageResult.exportPayload);
     return result;
   } catch (error) {
@@ -156,7 +199,11 @@ async function main() {
   if (!targets.some((target) => target.enabled)) {
     const summary = buildLiveSmokeSummary(targets, packageJson.version);
     fs.writeFileSync(path.join(artifactRoot, "summary.md"), summary, "utf8");
-    fs.writeFileSync(path.join(artifactRoot, "results.json"), JSON.stringify(targets, null, 2) + "\n", "utf8");
+    fs.writeFileSync(
+      path.join(artifactRoot, "results.json"),
+      JSON.stringify(targets, null, 2) + "\n",
+      "utf8"
+    );
     process.stdout.write(summary);
     return;
   }
@@ -174,10 +221,17 @@ async function main() {
 
     const summary = buildLiveSmokeSummary(results, packageJson.version);
     fs.writeFileSync(path.join(artifactRoot, "summary.md"), summary, "utf8");
-    fs.writeFileSync(path.join(artifactRoot, "results.json"), JSON.stringify(results, null, 2) + "\n", "utf8");
+    fs.writeFileSync(
+      path.join(artifactRoot, "results.json"),
+      JSON.stringify(results, null, 2) + "\n",
+      "utf8"
+    );
     process.stdout.write(summary);
 
+    const driftFails = process.env.SMOKE_DRIFT_FAILS !== "0";
     if (results.some((result) => result.status === "failed")) {
+      process.exitCode = 1;
+    } else if (driftFails && results.some((result) => result.status === "drifted")) {
       process.exitCode = 1;
     }
   } finally {
@@ -186,6 +240,8 @@ async function main() {
 }
 
 main().catch((error) => {
-  process.stderr.write(`${error instanceof Error ? error.stack || error.message : String(error)}\n`);
+  process.stderr.write(
+    `${error instanceof Error ? error.stack || error.message : String(error)}\n`
+  );
   process.exitCode = 1;
 });

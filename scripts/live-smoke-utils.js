@@ -1,3 +1,5 @@
+const fs = require("node:fs");
+const path = require("node:path");
 const { URL } = require("node:url");
 
 const TARGET_DEFINITIONS = [
@@ -28,11 +30,13 @@ const TARGET_DEFINITIONS = [
 ];
 
 function sanitizeName(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "") || "unknown";
+  return (
+    String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "unknown"
+  );
 }
 
 function parseCookieJson(rawValue, baseUrl) {
@@ -148,6 +152,52 @@ function assessExtraction(target, extraction) {
   };
 }
 
+function loadBaseline(targetId, baselineDir) {
+  const baselinePath = path.join(baselineDir, `${targetId}.json`);
+  if (!fs.existsSync(baselinePath)) {
+    return null;
+  }
+  try {
+    return JSON.parse(fs.readFileSync(baselinePath, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
+function assessDrift(target, extraction, baseline) {
+  if (!baseline) {
+    return { status: "no-baseline", details: [] };
+  }
+
+  const details = [];
+
+  if (extraction.strategyId !== baseline.strategyId) {
+    details.push(`strategy: baseline "${baseline.strategyId}" -> live "${extraction.strategyId}"`);
+  }
+
+  if (extraction.source !== baseline.source) {
+    details.push(`source: baseline "${baseline.source}" -> live "${extraction.source}"`);
+  }
+
+  const baselineAuthors = [...(baseline.authors || [])].sort();
+  const liveAuthors = [...(extraction.authors || [])].sort();
+  if (JSON.stringify(baselineAuthors) !== JSON.stringify(liveAuthors)) {
+    details.push(
+      `authors: baseline [${baselineAuthors.join(", ")}] -> live [${liveAuthors.join(", ")}]`
+    );
+  }
+
+  // Message count is only comparable when the live URL is the same conversation
+  // the baseline was recorded from; a different conversation legitimately differs.
+  if (target.url === baseline.url && extraction.messageCount !== baseline.messageCount) {
+    details.push(
+      `message count: baseline ${baseline.messageCount} -> live ${extraction.messageCount}`
+    );
+  }
+
+  return { status: details.length > 0 ? "drifted" : "matched", details };
+}
+
 function summarizeResultLine(result) {
   if (result.status === "skipped") {
     return `- SKIP ${result.displayName}: ${result.skipReason}`;
@@ -157,6 +207,16 @@ function summarizeResultLine(result) {
     const source = result.extraction?.source || "unknown";
     const strategy = result.extraction?.strategyId || "unknown";
     return `- FAIL ${result.displayName}: ${result.failureReason} (source: ${source}, strategy: ${strategy})`;
+  }
+
+  if (result.status === "drifted") {
+    const source = result.extraction?.source || "unknown";
+    const strategy = result.extraction?.strategyId || "unknown";
+    const lines = (result.drift?.details || []).map((detail) => `    - ${detail}`);
+    return [
+      `- DRIFT ${result.displayName}: structure changed vs baseline (source: ${source}, strategy: ${strategy})`,
+      ...lines
+    ].join("\n");
   }
 
   return `- PASS ${result.displayName}: ${result.extraction.messageCount} messages via ${result.extraction.source}/${result.extraction.strategyId}`;
@@ -171,6 +231,7 @@ function buildLiveSmokeSummary(results, version = "unknown") {
     {
       passed: 0,
       failed: 0,
+      drifted: 0,
       skipped: 0
     }
   );
@@ -181,6 +242,7 @@ function buildLiveSmokeSummary(results, version = "unknown") {
     `- Version: ${version}`,
     `- Passed: ${counts.passed}`,
     `- Failed: ${counts.failed}`,
+    `- Drifted: ${counts.drifted}`,
     `- Skipped: ${counts.skipped}`,
     "",
     "## Targets",
@@ -191,9 +253,11 @@ function buildLiveSmokeSummary(results, version = "unknown") {
 
 module.exports = {
   TARGET_DEFINITIONS,
+  assessDrift,
   assessExtraction,
   buildLiveSmokeSummary,
   getTargetConfigs,
+  loadBaseline,
   parseCookies,
   sanitizeName
 };

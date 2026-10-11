@@ -76,9 +76,13 @@ jobs:
           path: artifacts/live-smoke
       - name: Append live smoke summary to workflow
         if: always()
-        run: |
+        run:
           if [ -f artifacts/live-smoke/summary.md ]; then
             cat artifacts/live-smoke/summary.md >> "$GITHUB_STEP_SUMMARY"
+            if grep -q "^- DRIFT " artifacts/live-smoke/summary.md; then
+              echo "" >> "$GITHUB_STEP_SUMMARY"
+              echo "> Structure drift detected against committed baselines in tests/baselines/. Re-record with SMOKE_RECORD_BASELINE=1 after confirming the new shape is correct." >> "$GITHUB_STEP_SUMMARY"
+            fi
           else
             echo "## Live Smoke Summary" >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"

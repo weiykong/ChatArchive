@@ -28,7 +28,7 @@ jobs:
           npm test 2>&1 | tee compatibility.log
       - name: Upload compatibility artifacts
         if: always()
-    continue-on-error: true
+      continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: fixture-compatibility-artifacts
@@ -37,7 +37,7 @@ jobs:
             compatibility.log
       - name: Append summary to workflow
         if: always()
-    continue-on-error: true
+      continue-on-error: true
         run: cat compatibility-summary.md >> "$GITHUB_STEP_SUMMARY"
 
   live-smoke:
@@ -72,14 +72,14 @@ jobs:
           exit 0
       - name: Upload live smoke artifacts
         if: always()
-    continue-on-error: true
+      continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: live-smoke-artifacts
           path: artifacts/live-smoke
       - name: Append live smoke summary to workflow
         if: always()
-    continue-on-error: true
+      continue-on-error: true
         run:
           if [ -f artifacts/live-smoke/summary.md ]; then
             cat artifacts/live-smoke/summary.md >> "$GITHUB_STEP_SUMMARY"
@@ -102,7 +102,7 @@ jobs:
       - fixture-compatibility
       - live-smoke
     if: always()
-    continue-on-error: true && (needs.fixture-compatibility.result == 'failure' || needs.live-smoke.result == 'failure')
+      continue-on-error: true && (needs.fixture-compatibility.result == 'failure' || needs.live-smoke.result == 'failure')
     permissions:
       contents: read
       issues: write

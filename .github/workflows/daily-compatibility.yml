@@ -42,7 +42,6 @@ jobs:
 
   live-smoke:
     runs-on: ubuntu-latest
-    if: env.SMOKE_CHATGPT_URL != '' || env.SMOKE_GEMINI_URL != '' || env.SMOKE_PERPLEXITY_URL != ''
     timeout-minutes: 30
     permissions:
       contents: read

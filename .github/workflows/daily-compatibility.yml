@@ -90,8 +90,7 @@ jobs:
     needs:
       - fixture-compatibility
       - live-smoke
-    if: always()
- && (needs.fixture-compatibility.result == 'failure' || needs.live-smoke.result == 'failure')
+    if: always() && (needs.fixture-compatibility.result == 'failure' || needs.live-smoke.result == 'failure')
     permissions:
       contents: read
       issues: write
